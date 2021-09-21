@@ -71,11 +71,13 @@ class VisualizationFactory {
             this.boneStyle, this.boneStyle, this.jointStyle, 1, this.boneStyle, this.noseRadius, this.blurFrameOpacity);
         let visualization;
         if (this.createZoomable && this.numZoomedKeyframes > 1) {
+            console.log("I am here1!");
             visualization = createZoomableVisualizationElementCustom(sequence, this.model, this.numKeyframes,
                 this.numZoomedKeyframes, this.numBlurFrames, mapWidth, mapHeight, visualizationWidth, visualizationHeight,
                 drawStyle, drawStyleBlur, this.addTimeScale, this.addFillingKeyframes, this.keyframeSelectionAlgorithm,
                 this.labelFrames, this.useTrueTime);
         } else {
+            console.log("I am here2!");
             visualization = createVisualizationElementCustom(sequence, this.model, this.numKeyframes,
                 this.numBlurFrames, mapWidth, mapHeight, visualizationWidth, visualizationHeight,
                 drawStyle, drawStyleBlur, this.addTimeScale, this.addFillingKeyframes, this.keyframeSelectionAlgorithm,
@@ -100,12 +102,17 @@ class VisualizationFactory {
             });
         });
         frames2 = frames2.filter((f) => {return f.length > 0 && !isNaN(f[0].x) && !isNaN(f[0].y) && !isNaN(f[0].z)});
+
         const res = this.countDtw(frames, frames2);
         console.log(res);
+
+        let vis = this.createVisualization(seq1, 1200, 50, 250, 150);
+        vis.append(this.createVisualization(seq2, 1200, 50, 250, 150));
+
+        return vis;
     }
 
     countDtw(seq1, seq2) {
-        console.log(seq1);
         let len1 = seq1.length + 1;
         let len2 = seq2.length + 1;
         let arr = new Array(len1);
@@ -170,7 +177,6 @@ class VisualizationFactory {
                 pathArr[i][j + 1] = pathArr[i][j] + arr[i][j + 1];
             }
         }
-        console.log(pathArr);
         return Math.sqrt(pathArr[len1 - 1][len2 - 1]);
     }
 }
@@ -326,7 +332,7 @@ function modifySkeletonToFrame(skeleton, frame, drawStyle, xShift, yShift, figur
     }
 }
 
-function drawSequence(mocapRenderer, frames, indexes, numBlurPositions, drawStyle, drawStyleBlur, figureScale, yShift = 0, clear = true, useTrueTime = true) {
+function drawSequence(mocapRenderer, frames, indexes, numBlurPositions, drawStyle, drawStyleBlur, figureScale, yShift = 0, clear = true, useTrueTime = true, useDots = false) {
     if (clear) {
         clearRenderer(mocapRenderer);
     }
@@ -354,6 +360,13 @@ function drawSequence(mocapRenderer, frames, indexes, numBlurPositions, drawStyl
             drawFrame(mocapRenderer, Core.moveOriginXBy(frames[indexes[i]-j], coreX), figureScale, xShift, yShift, drawStyleBlur, false);
         }
         drawFrame(mocapRenderer, Core.moveOriginXBy(frames[indexes[i]], coreX), figureScale, xShift, yShift, drawStyle, false);
+        if (i !== (indexes.length - 1) && useDots) {
+            for (let j = indexes[i]; j < indexes[i + 1]; j ++) {
+                drawDotFrame(mocapRenderer, xShift);
+                xShift += 0.25;
+            }
+        }
+
         xPositions.push(xShift);
     }
     return xPositions;
@@ -363,6 +376,16 @@ function drawFrame(mocapRenderer, frame, figureScale, xShift, yShift, drawStyle,
     mocapRenderer.renderer.autoClearColor = clear;
     modifySkeletonToFrame(mocapRenderer.skeleton, frame, drawStyle, xShift, yShift, figureScale);
     mocapRenderer.renderer.render(mocapRenderer.scene, mocapRenderer.camera);
+}
+
+function drawDotFrame(mocapRenderer, xPosition, circleRadius) {
+    let scene = new THREE.Scene();
+    const geometry = new THREE.CircleGeometry(circleRadius, 32);
+    const material = new THREE.MeshBasicMaterial( { color: "red" } );
+    const circle = new THREE.Mesh(geometry, material);
+    circle.position.set(xPosition, 0.1, 0);
+    scene.add(circle);
+    mocapRenderer.renderer.render(scene, mocapRenderer.camera);
 }
 
 function clearRenderer(mocapRenderer) {
@@ -494,7 +517,16 @@ function createVisualizationElementCustom(sequence, model, numKeyframes, numBlur
             drawStyle.jointStyle, drawStyle.figureScale, drawStyle.noseStyle, drawStyle.noseRadius, 0.4);
         drawSequence(mainRenderer, frames, fillKeyframes, 0, fillStyle, drawStyleBlur, figureScale, 0, false, useTrueTime);
     }
-    let positions = drawSequence(mainRenderer, frames, keyframes, numBlurFrames, drawStyle, drawStyleBlur, figureScale, 0, false, useTrueTime);
+    let positions = drawSequence(mainRenderer, frames, keyframes, numBlurFrames, drawStyle, drawStyleBlur, figureScale, 0, false, useTrueTime, false);
+
+    let circleRadius = 0.1;
+    let shift = positions[positions.length - 1]/frames.length;
+    console.log("CisWidth:" + visualizationWidth + "Frames:" + frames.length + "shift" + shift);
+    let xPosition = 1;
+    for (let i = 0; i < frames.length; i ++) {
+        drawDotFrame(mainRenderer, xPosition, circleRadius);
+        xPosition += shift;
+    }
     if (mapWidth > 0 && mapHeight > 0) {
         let map = addMapToVisualization(frames, keyframes, figureScale, model, mapWidth, mapHeight);
         div.appendChild(map);
@@ -544,7 +576,7 @@ function createTextElements(positions, keyframes, image, mapWidth, mainDiv) {
         element.style.width = 40;
         element.style.height = 25;
         element.innerHTML = keyframes[i];
-        element.style.top = (2) + 'px';;//(image.height-18) + 'px';
+        element.style.top = (image.height-18) + 'px';
         element.style.left = ((positions[i]/100)*image.width+mapWidth-3) + 'px';
         element.style.fontSize = "0.75em";
         element.style.color = "rgb(5, 10, 5)";
@@ -590,7 +622,7 @@ function findKeyframes(frames, numKeyframes, keyframeSelectionAlgorithm) {
  * @param {string} sequence - Loaded sequence
  * @param {Model.SkeletonModel} model - Skeleton model
  * @param {*} visualizationWidth - Width of the animation in pixels
- * @param {*} visualizationHeight - Height of the animation in pixels
+ * @param {*} visualizationHeight - Height of tdrawItemVisualizationhe animation in pixels
  */
 function createAnimationElement(sequence, model, visualizationWidth, visualizationHeight) {
     let drawStyle = new Core.MocapDrawStyle(model, 0.9, 0,
@@ -598,7 +630,7 @@ function createAnimationElement(sequence, model, visualizationWidth, visualizati
     let div = document.createElement("div");
     div.className = "drawItem-"+Model.motionCategories[Core.getSequenceCategory(sequence)];
     let canvas = document.createElement("canvas");
-    canvas.className = "drawItemVisualization";
+    canvas.className = "";
     div.appendChild(canvas);
     let jointsCount = Core.getSequenceJointsPerFrame(sequence);
     let mocapRenderer = initializeMocapRenderer(canvas, visualizationWidth, visualizationHeight, drawStyle, jointsCount);
