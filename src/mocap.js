@@ -521,7 +521,6 @@ function createVisualizationElementCustom(sequence, model, numKeyframes, numBlur
 
     let circleRadius = 0.1;
     let shift = positions[positions.length - 1]/frames.length;
-    console.log("CisWidth:" + visualizationWidth + "Frames:" + frames.length + "shift" + shift);
     let xPosition = 1;
     for (let i = 0; i < frames.length; i ++) {
         drawDotFrame(mainRenderer, xPosition, circleRadius);
@@ -529,7 +528,7 @@ function createVisualizationElementCustom(sequence, model, numKeyframes, numBlur
     }
     if (mapWidth > 0 && mapHeight > 0) {
         let map = addMapToVisualization(frames, keyframes, figureScale, model, mapWidth, mapHeight);
-        div.appendChild(map);
+        //div.appendChild(map);
     }
     div.appendChild(image);
     image.src = mainRenderer.canvas.toDataURL("image/png");
@@ -577,7 +576,7 @@ function createTextElements(positions, keyframes, image, mapWidth, mainDiv) {
         element.style.height = 25;
         element.innerHTML = keyframes[i];
         element.style.top = (image.height-18) + 'px';
-        element.style.left = ((positions[i]/100)*image.width+mapWidth-3) + 'px';
+        element.style.left = ((positions[i]/100)*image.width-3) + 'px';
         element.style.fontSize = "0.75em";
         element.style.color = "rgb(5, 10, 5)";
         element.style.textAlign = "left";
