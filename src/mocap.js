@@ -2,7 +2,7 @@ import * as THREE from './lib/three.module.js';
 import * as Model from './model.js';
 import * as Core from './mocapCore.js';
 import {OrbitControls} from './lib/OrbitControls.js';
-import {Vec3, DTWSquare, compareTwoTimeSeries} from "./mocapCore.js";
+import {createDiffVisualization} from "./mocapDiffs.js";
 
 let mainRenderer = null;
 const sceneWidth = 100;
@@ -71,13 +71,11 @@ class VisualizationFactory {
             this.boneStyle, this.boneStyle, this.jointStyle, 1, this.boneStyle, this.noseRadius, this.blurFrameOpacity);
         let visualization;
         if (this.createZoomable && this.numZoomedKeyframes > 1) {
-            console.log("I am here1!");
             visualization = createZoomableVisualizationElementCustom(sequence, this.model, this.numKeyframes,
                 this.numZoomedKeyframes, this.numBlurFrames, mapWidth, mapHeight, visualizationWidth, visualizationHeight,
                 drawStyle, drawStyleBlur, this.addTimeScale, this.addFillingKeyframes, this.keyframeSelectionAlgorithm,
                 this.labelFrames, this.useTrueTime);
         } else {
-            console.log("I am here2!");
             visualization = createVisualizationElementCustom(sequence, this.model, this.numKeyframes,
                 this.numBlurFrames, mapWidth, mapHeight, visualizationWidth, visualizationHeight,
                 drawStyle, drawStyleBlur, this.addTimeScale, this.addFillingKeyframes, this.keyframeSelectionAlgorithm,
@@ -86,99 +84,39 @@ class VisualizationFactory {
         return visualization;
     }
 
-    countDtwFromSequences(seq1, seq2) {
-        let frames = seq1.map((frame) => {
-            return frame.replace(" ", "").split(';').map((joint) => {
-                let xyz = joint.split(',');
-                return {x:xyz[0], y:xyz[1], z:xyz[2]};
-            });
-        });
-        frames = frames.filter((f) => {return f.length > 0 && !isNaN(f[0].x) && !isNaN(f[0].y) && !isNaN(f[0].z)});
+    countDtwFromSequences(sequence1, sequence2, visualizationWidth = 1200, visualizationHeight = 225) {
+        let drawStyle = new Core.MocapDrawStyle(this.model, this.boneRadius, this.jointRadius, this.headRadius, this.boneStyle,
+            this.leftBoneStyle, this.rightBoneStyle, this.jointStyle, 1, this.noseStyle, this.noseRadius, this.opacity);
+        let drawStyleBlur = new Core.MocapDrawStyle(this.model, this.boneRadius, this.jointRadius, this.headRadius, this.boneStyle,
+            this.boneStyle, this.boneStyle, this.jointStyle, 1, this.boneStyle, this.noseRadius, this.blurFrameOpacity);
 
-        let frames2 = seq2.map((frame) => {
-            return frame.replace(" ", "").split(';').map((joint) => {
-                let xyz = joint.split(',');
-                return {x:xyz[0], y:xyz[1], z:xyz[2]};
-            });
-        });
-        frames2 = frames2.filter((f) => {return f.length > 0 && !isNaN(f[0].x) && !isNaN(f[0].y) && !isNaN(f[0].z)});
+        return createDiffVisualization(mainRenderer, sequence1, sequence2, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur);
+        // let frames = seq1.map((frame) => {
+        //     return frame.replace(" ", "").split(';').map((joint) => {
+        //         let xyz = joint.split(',');
+        //         return {x:xyz[0], y:xyz[1], z:xyz[2]};
+        //     });
+        // });
+        // frames = frames.filter((f) => {return f.length > 0 && !isNaN(f[0].x) && !isNaN(f[0].y) && !isNaN(f[0].z)});
+        //
+        // let frames2 = seq2.map((frame) => {
+        //     return frame.replace(" ", "").split(';').map((joint) => {
+        //         let xyz = joint.split(',');
+        //         return {x:xyz[0], y:xyz[1], z:xyz[2]};
+        //     });
+        // });
+        // frames2 = frames2.filter((f) => {return f.length > 0 && !isNaN(f[0].x) && !isNaN(f[0].y) && !isNaN(f[0].z)});
+        //
+        // const res = this.countDtw(frames, frames2);
+        // console.log(res);
+        //
+        // let vis = this.createVisualization(seq1, 1200, 50, 250, 150);
+        // vis.append(this.createVisualization(seq2, 1200, 50, 250, 150));
 
-        const res = this.countDtw(frames, frames2);
-        console.log(res);
-
-        let vis = this.createVisualization(seq1, 1200, 50, 250, 150);
-        vis.append(this.createVisualization(seq2, 1200, 50, 250, 150));
-
-        return vis;
+        //return vis;
     }
 
-    countDtw(seq1, seq2) {
-        let len1 = seq1.length + 1;
-        let len2 = seq2.length + 1;
-        let arr = new Array(len1);
-        for (let i = 0; i < len1; i++) {
-            arr[i] = new Array(len2);
-        }
 
-        for (let i = 0; i < len1; i++) {
-            arr[i][0] = Number.POSITIVE_INFINITY;
-        }
-
-        for (let i = 0; i < len2; i++) {
-            arr[0][i] = Number.POSITIVE_INFINITY;
-        }
-
-        arr[0][0] = 0;
-
-        for (let i = 1; i < len1; i++) {
-            for (let j = 1; j < len2; j++) {
-                let square = new DTWSquare(arr[i - 1][j - 1], arr[i][j - 1], arr[i - 1][j]);
-                arr[i][j] = compareTwoTimeSeries(seq1[i - 1], seq2[j - 1], square);
-            }
-        }
-
-        return arr[len1 - 1][len2 - 1];
-    }
-
-    countMatrix(arr) {
-        let len1 = arr.length;
-        let len2 = arr[0].length;
-        let pathArr = new Array(len1);
-        for (let i = 0; i < len1; i++) {
-            pathArr[i] = new Array(len2);
-        }
-        for (let i = 0; i < len1; i++) {
-            for (let j = 0; j < len2; j++) {
-                pathArr[i][j] = Number.POSITIVE_INFINITY;
-            }
-        }
-        pathArr[0][0] = 0;
-        pathArr[1][1] = arr[1][1]
-        let queue = [ [1, 1] ];
-        while (queue.length !== 0) {
-            let coords = queue.shift();
-            let i = coords[0];
-            let j = coords[1];
-            // move right : depends on how you look at it
-            if (i + 1 !== len1 && pathArr[i + 1][j] > pathArr[i][j] + arr[i + 1][j]) {
-                queue.push([i + 1, j]);
-                pathArr[i + 1][ j] = pathArr[i][j] + arr[i + 1][j];
-            }
-
-            // move bottom right
-            if (i + 1 !== len1 && j + 1 !== len2 && pathArr[i + 1][j + 1] > pathArr[i][j] + arr[i + 1][j + 1]) {
-                queue.push([i + 1, j + 1]);
-                pathArr[i + 1][j + 1] = pathArr[i][j] + arr[i + 1][j + 1];
-            }
-
-            // move bottom
-            if (j + 1 !== len2 && pathArr[i][j + 1] > pathArr[i][j] + arr[i][j + 1]) {
-                queue.push([i, j + 1]);
-                pathArr[i][j + 1] = pathArr[i][j] + arr[i][j + 1];
-            }
-        }
-        return Math.sqrt(pathArr[len1 - 1][len2 - 1]);
-    }
 }
 
 class MocapRenderer {
@@ -332,7 +270,7 @@ function modifySkeletonToFrame(skeleton, frame, drawStyle, xShift, yShift, figur
     }
 }
 
-function drawSequence(mocapRenderer, frames, indexes, numBlurPositions, drawStyle, drawStyleBlur, figureScale, yShift = 0, clear = true, useTrueTime = true, useDots = false) {
+function drawSequence(mocapRenderer, frames, indexes, numBlurPositions, drawStyle, drawStyleBlur, figureScale, yShift = 0, clear = true, useTrueTime = true) {
     if (clear) {
         clearRenderer(mocapRenderer);
     }
@@ -360,12 +298,6 @@ function drawSequence(mocapRenderer, frames, indexes, numBlurPositions, drawStyl
             drawFrame(mocapRenderer, Core.moveOriginXBy(frames[indexes[i]-j], coreX), figureScale, xShift, yShift, drawStyleBlur, false);
         }
         drawFrame(mocapRenderer, Core.moveOriginXBy(frames[indexes[i]], coreX), figureScale, xShift, yShift, drawStyle, false);
-        if (i !== (indexes.length - 1) && useDots) {
-            for (let j = indexes[i]; j < indexes[i + 1]; j ++) {
-                drawDotFrame(mocapRenderer, xShift);
-                xShift += 0.25;
-            }
-        }
 
         xPositions.push(xShift);
     }
@@ -376,16 +308,6 @@ function drawFrame(mocapRenderer, frame, figureScale, xShift, yShift, drawStyle,
     mocapRenderer.renderer.autoClearColor = clear;
     modifySkeletonToFrame(mocapRenderer.skeleton, frame, drawStyle, xShift, yShift, figureScale);
     mocapRenderer.renderer.render(mocapRenderer.scene, mocapRenderer.camera);
-}
-
-function drawDotFrame(mocapRenderer, xPosition, circleRadius) {
-    let scene = new THREE.Scene();
-    const geometry = new THREE.CircleGeometry(circleRadius, 32);
-    const material = new THREE.MeshBasicMaterial( { color: "red" } );
-    const circle = new THREE.Mesh(geometry, material);
-    circle.position.set(xPosition, 0.1, 0);
-    scene.add(circle);
-    mocapRenderer.renderer.render(scene, mocapRenderer.camera);
 }
 
 function clearRenderer(mocapRenderer) {
@@ -517,7 +439,7 @@ function createVisualizationElementCustom(sequence, model, numKeyframes, numBlur
             drawStyle.jointStyle, drawStyle.figureScale, drawStyle.noseStyle, drawStyle.noseRadius, 0.4);
         drawSequence(mainRenderer, frames, fillKeyframes, 0, fillStyle, drawStyleBlur, figureScale, 0, false, useTrueTime);
     }
-    let positions = drawSequence(mainRenderer, frames, keyframes, numBlurFrames, drawStyle, drawStyleBlur, figureScale, 0, false, useTrueTime, false);
+    let positions = drawSequence(mainRenderer, frames, keyframes, numBlurFrames, drawStyle, drawStyleBlur, figureScale, 0, false, useTrueTime);
 
     let circleRadius = 0.1;
     let shift = positions[positions.length - 1]/frames.length;
@@ -660,8 +582,9 @@ function createAnimationElement(sequence, model, visualizationWidth, visualizati
     return div;
 }
 
-export {VisualizationFactory, visualizeToCanvas, createVisualizationElement, createZoomableVisualizationElement, createAnimationElement};
+export {VisualizationFactory, visualizeToCanvas, createVisualizationElement, createZoomableVisualizationElement, createAnimationElement, drawSequence, resizeSkeleton, findKeyframes, clearRenderer, initializeMocapRenderer, resizeMocapRenderer};
 export {loadDataFromString, loadDataFromFile, getSequenceLength, getSequenceCategory, getSequenceJointsPerFrame, KeyframeSelectionAlgorithmEnum} from './mocapCore.js';
+export {createDiffVisualization} from './mocapDiffs.js';
 export * from './model.js';
 export * from './asfAmcParser.js';
 //export * from './mocapCanvas2d.js';
