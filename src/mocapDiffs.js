@@ -23,12 +23,24 @@ function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizati
     let jointsCount = Core.getSequenceJointsPerFrame(sequence1);
     mainRenderer = initializeMocapRenderer(canvas, visualizationWidth, visualizationHeight, drawStyle, jointsCount);
 
-    let dotCoords1 = drawSequenceIntoImage(mainRenderer, sequence1, visualizationWidth, visualizationHeight  / 3, drawStyle, drawStyleBlur, 12, 12);
-    let dotCoords2 = drawSequenceIntoImage(mainRenderer, sequence2, visualizationWidth, visualizationHeight / 3, drawStyle, drawStyleBlur, 0, 6);
-    let dtwArr = countDtw(prepareSequence(sequence1), prepareSequence(sequence2));
-    let path = countMatrix(dtwArr);
-    console.log(path);
-    drawLines(mainRenderer, dotCoords1, dotCoords2, path);
+    // draw skeletons
+    let processed1 = Core.processSequence(sequence1, numKeyframes, sceneWidth, visualizationWidth, visualizationHeight  / 3, drawStyle);
+    let positions1 = drawSequenceIntoImage(mainRenderer, processed1, drawStyle, drawStyleBlur, 12);
+
+    let processed2 = Core.processSequence(sequence2, numKeyframes, sceneWidth, visualizationWidth, visualizationHeight  / 3, drawStyle);
+    let positions2 = drawSequenceIntoImage(mainRenderer, processed2, drawStyle, drawStyleBlur, 0);
+
+    // count DTW
+    let DTWArr = countDTW(prepareSequence(sequence1), prepareSequence(sequence2));
+    let DTWMapping = countMatrix(DTWArr);
+
+    // draw dots
+    console.log(DTWMapping);
+    let dotCoords1 = drawDots(mainRenderer, 12, positions1, processed1.frames);
+    let dotCoords2 = drawDots(mainRenderer, 6, positions2, processed2.frames);
+
+    // draw lines
+    drawLines(mainRenderer, dotCoords1, dotCoords2, DTWMapping);
 
     div.appendChild(image);
     image.src = mainRenderer.canvas.toDataURL("image/png");
@@ -39,8 +51,7 @@ function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizati
     return div;
 }
 
-function drawSequenceIntoImage(mainRenderer, sequence, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur, yShift, dotYShift) {
-    let processed = Core.processSequence(sequence, numKeyframes, sceneWidth, visualizationWidth, visualizationHeight, drawStyle);
+function drawSequenceIntoImage(mainRenderer, processed, drawStyle, drawStyleBlur, yShift) {
     let figureScale = processed.figureScale;
     let frames = processed.frames;
     resizeSkeleton(mainRenderer.skeleton, drawStyle, figureScale);
@@ -52,8 +63,22 @@ function drawSequenceIntoImage(mainRenderer, sequence, visualizationWidth, visua
         drawStyle.jointStyle, drawStyle.figureScale, drawStyle.noseStyle, drawStyle.noseRadius, 0.4);
     drawSequence(mainRenderer, frames, fillKeyframes, 0, fillStyle, drawStyleBlur, figureScale, yShift, false, true);
 
-    let positions = drawSequence(mainRenderer, frames, keyframes, 0, drawStyle, drawStyleBlur, figureScale, yShift, false, true);
+    return drawSequence(mainRenderer, frames, keyframes, 0, drawStyle, drawStyleBlur, figureScale, yShift, false, true);
 
+    // let circleRadius = 0.1;
+    // let shift = positions[positions.length - 1]/frames.length;
+    // let xPosition = 1;
+    // let dots = [];
+    // for (let i = 0; i < frames.length; i ++) {
+    //     drawDotFrame(mainRenderer, xPosition, dotYShift, circleRadius);
+    //     dots.push(new Vec3(xPosition, dotYShift, 0));
+    //     xPosition += shift;
+    // }
+    // return dots;
+    //return drawDots(mainRenderer, dotYShift, positions, frames);
+}
+
+function drawDots(mainRenderer, dotYShift, positions, frames) {
     let circleRadius = 0.1;
     let shift = positions[positions.length - 1]/frames.length;
     let xPosition = 1;
@@ -69,14 +94,14 @@ function drawSequenceIntoImage(mainRenderer, sequence, visualizationWidth, visua
 function drawDotFrame(mocapRenderer, xPosition, yPosition, circleRadius) {
     let scene = new THREE.Scene();
     const geometry = new THREE.CircleGeometry(circleRadius, 32);
-    const material = new THREE.MeshBasicMaterial( { color: "red" } );
+    const material = new THREE.MeshBasicMaterial( { color: "rgb(255, 0, 0)" } );
     const circle = new THREE.Mesh(geometry, material);
     circle.position.set(xPosition, 0.1 + yPosition, 0);
     scene.add(circle);
     mocapRenderer.renderer.render(scene, mocapRenderer.camera);
 }
 
-function countDtw(seq1, seq2) {
+function countDTW(seq1, seq2) {
     let len1 = seq1.length + 1;
     let len2 = seq2.length + 1;
     let arr = new Array(len1);
@@ -217,16 +242,17 @@ function PathArrEl(value, path) {
 }
 
 function drawLines(mocapRenderer, dots1, dots2, path) {
+    let colorCoeff = 255 / path.length;
     for (let i = 1; i < path.length; i ++) {
-        console.log(i);
-        drawLine(mocapRenderer, dots1[path[i][0] - 1], dots2[path[i][1] - 1]);
+        let colorG = Math.floor(colorCoeff * Math.abs(path[i][0] - path[i][1]));
+        drawLine(mocapRenderer, dots1[path[i][0] - 1], dots2[path[i][1] - 1], colorG);
     }
 }
 
-function drawLine(mocapRenderer, coord1, coord2) {
+function drawLine(mocapRenderer, coord1, coord2, colorG) {
     let scene = new THREE.Scene();
 
-    const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+    const material = new THREE.LineBasicMaterial( { color: `rgb(255, ${colorG}, ${colorG})` } );
     const points = [];
     points.push( new THREE.Vector3( coord1.x, coord1.y, coord1.z));
     points.push( new THREE.Vector3( coord2.x, coord2.y, coord2.z));
