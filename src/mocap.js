@@ -84,7 +84,16 @@ class VisualizationFactory {
         return visualization;
     }
 
-    countDtwFromSequences(sequence1, sequence2, visualizationWidth = 1200, visualizationHeight = 225) {
+    getIndexOfSequenceById(sequence, id) {
+        for (let i = 0; i < sequence.length; i++) {
+            if (sequence[i][0].includes(id)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    visualizeSequenceDiffs(sequence1, sequence2, visualizationWidth = 1200, visualizationHeight = 200) {
         let drawStyle = new Core.MocapDrawStyle(this.model, this.boneRadius, this.jointRadius, this.headRadius, this.boneStyle,
             this.leftBoneStyle, this.rightBoneStyle, this.jointStyle, 1, this.noseStyle, this.noseRadius, this.opacity);
         let drawStyleBlur = new Core.MocapDrawStyle(this.model, this.boneRadius, this.jointRadius, this.headRadius, this.boneStyle,
@@ -450,7 +459,7 @@ function createVisualizationElementCustom(sequence, model, numKeyframes, numBlur
     }
     if (mapWidth > 0 && mapHeight > 0) {
         let map = addMapToVisualization(frames, keyframes, figureScale, model, mapWidth, mapHeight);
-        //div.appendChild(map);
+        div.appendChild(map);
     }
     div.appendChild(image);
     image.src = mainRenderer.canvas.toDataURL("image/png");

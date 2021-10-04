@@ -13,6 +13,8 @@ import {Vec3} from "./mocapCore.js";
 
 const sceneWidth = 100;
 const numKeyframes = 10;
+const circleRadius = 0.1;
+const startDotXPosition = 1;
 
 function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur) {
     let div = document.createElement("div");
@@ -24,20 +26,22 @@ function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizati
     mainRenderer = initializeMocapRenderer(canvas, visualizationWidth, visualizationHeight, drawStyle, jointsCount);
 
     // draw skeletons
+    let yThird = visualizationHeight / 37.5;
     let processed1 = Core.processSequence(sequence1, numKeyframes, sceneWidth, visualizationWidth, visualizationHeight  / 3, drawStyle);
-    let positions1 = drawSequenceIntoImage(mainRenderer, processed1, drawStyle, drawStyleBlur, 12);
+    let positions1 = drawSequenceIntoImage(mainRenderer, processed1, drawStyle, drawStyleBlur, yThird * 2)
 
     let processed2 = Core.processSequence(sequence2, numKeyframes, sceneWidth, visualizationWidth, visualizationHeight  / 3, drawStyle);
     let positions2 = drawSequenceIntoImage(mainRenderer, processed2, drawStyle, drawStyleBlur, 0);
 
     // count DTW
     let DTWArr = countDTW(prepareSequence(sequence1), prepareSequence(sequence2));
+    console.log(DTWArr[DTWArr.length - 1][DTWArr[0].length - 1]);
     let DTWMapping = countMatrix(DTWArr);
 
     // draw dots
     console.log(DTWMapping);
-    let dotCoords1 = drawDots(mainRenderer, 12, positions1, processed1.frames);
-    let dotCoords2 = drawDots(mainRenderer, 6, positions2, processed2.frames);
+    let dotCoords1 = drawDots(mainRenderer, yThird * 2, positions1, processed1.frames);
+    let dotCoords2 = drawDots(mainRenderer, yThird, positions2, processed2.frames);
 
     // draw lines
     drawLines(mainRenderer, dotCoords1, dotCoords2, DTWMapping);
@@ -64,24 +68,11 @@ function drawSequenceIntoImage(mainRenderer, processed, drawStyle, drawStyleBlur
     drawSequence(mainRenderer, frames, fillKeyframes, 0, fillStyle, drawStyleBlur, figureScale, yShift, false, true);
 
     return drawSequence(mainRenderer, frames, keyframes, 0, drawStyle, drawStyleBlur, figureScale, yShift, false, true);
-
-    // let circleRadius = 0.1;
-    // let shift = positions[positions.length - 1]/frames.length;
-    // let xPosition = 1;
-    // let dots = [];
-    // for (let i = 0; i < frames.length; i ++) {
-    //     drawDotFrame(mainRenderer, xPosition, dotYShift, circleRadius);
-    //     dots.push(new Vec3(xPosition, dotYShift, 0));
-    //     xPosition += shift;
-    // }
-    // return dots;
-    //return drawDots(mainRenderer, dotYShift, positions, frames);
 }
 
 function drawDots(mainRenderer, dotYShift, positions, frames) {
-    let circleRadius = 0.1;
     let shift = positions[positions.length - 1]/frames.length;
-    let xPosition = 1;
+    let xPosition = startDotXPosition;
     let dots = [];
     for (let i = 0; i < frames.length; i ++) {
         drawDotFrame(mainRenderer, xPosition, dotYShift, circleRadius);
@@ -243,7 +234,7 @@ function PathArrEl(value, path) {
 
 function drawLines(mocapRenderer, dots1, dots2, path) {
     let colorCoeff = 255 / path.length;
-    for (let i = 1; i < path.length; i ++) {
+    for (let i = 1; i < path.length; i += 5) {
         let colorG = Math.floor(colorCoeff * Math.abs(path[i][0] - path[i][1]));
         drawLine(mocapRenderer, dots1[path[i][0] - 1], dots2[path[i][1] - 1], colorG);
     }
@@ -252,7 +243,7 @@ function drawLines(mocapRenderer, dots1, dots2, path) {
 function drawLine(mocapRenderer, coord1, coord2, colorG) {
     let scene = new THREE.Scene();
 
-    const material = new THREE.LineBasicMaterial( { color: `rgb(255, ${colorG}, ${colorG})` } );
+    const material = new THREE.LineBasicMaterial( { color: `rgb(${colorG}, 0, 0)` } );
     const points = [];
     points.push( new THREE.Vector3( coord1.x, coord1.y, coord1.z));
     points.push( new THREE.Vector3( coord2.x, coord2.y, coord2.z));
