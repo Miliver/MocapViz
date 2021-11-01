@@ -93,36 +93,13 @@ class VisualizationFactory {
         return -1;
     }
 
-    visualizeSequenceDiffs(sequence1, sequence2, visualizationWidth = 1200, visualizationHeight = 200) {
+    visualizeSequenceDiffs(sequence1, sequence2, visualizationWidth = 1905, visualizationHeight = 200) {
         let drawStyle = new Core.MocapDrawStyle(this.model, this.boneRadius, this.jointRadius, this.headRadius, this.boneStyle,
             this.leftBoneStyle, this.rightBoneStyle, this.jointStyle, 1, this.noseStyle, this.noseRadius, this.opacity);
         let drawStyleBlur = new Core.MocapDrawStyle(this.model, this.boneRadius, this.jointRadius, this.headRadius, this.boneStyle,
             this.boneStyle, this.boneStyle, this.jointStyle, 1, this.boneStyle, this.noseRadius, this.blurFrameOpacity);
 
         return createDiffVisualization(mainRenderer, sequence1, sequence2, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur);
-        // let frames = seq1.map((frame) => {
-        //     return frame.replace(" ", "").split(';').map((joint) => {
-        //         let xyz = joint.split(',');
-        //         return {x:xyz[0], y:xyz[1], z:xyz[2]};
-        //     });
-        // });
-        // frames = frames.filter((f) => {return f.length > 0 && !isNaN(f[0].x) && !isNaN(f[0].y) && !isNaN(f[0].z)});
-        //
-        // let frames2 = seq2.map((frame) => {
-        //     return frame.replace(" ", "").split(';').map((joint) => {
-        //         let xyz = joint.split(',');
-        //         return {x:xyz[0], y:xyz[1], z:xyz[2]};
-        //     });
-        // });
-        // frames2 = frames2.filter((f) => {return f.length > 0 && !isNaN(f[0].x) && !isNaN(f[0].y) && !isNaN(f[0].z)});
-        //
-        // const res = this.countDtw(frames, frames2);
-        // console.log(res);
-        //
-        // let vis = this.createVisualization(seq1, 1200, 50, 250, 150);
-        // vis.append(this.createVisualization(seq2, 1200, 50, 250, 150));
-
-        //return vis;
     }
 
 
@@ -279,7 +256,7 @@ function modifySkeletonToFrame(skeleton, frame, drawStyle, xShift, yShift, figur
     }
 }
 
-function drawSequence(mocapRenderer, frames, indexes, numBlurPositions, drawStyle, drawStyleBlur, figureScale, yShift = 0, clear = true, useTrueTime = true) {
+function drawSequence(mocapRenderer, frames, indexes, numBlurPositions, drawStyle, drawStyleBlur, figureScale, yShift = 0, clear = true, useTrueTime = true, xCoefficient = 1) {
     if (clear) {
         clearRenderer(mocapRenderer);
     }
@@ -296,9 +273,9 @@ function drawSequence(mocapRenderer, frames, indexes, numBlurPositions, drawStyl
     let xPositions = [];
     for (let i = 0; i < indexes.length; i++) {
         let coreX = frames[indexes[i]][0].x;
-        let xShift = (indexes[i]/frames.length)*(98-widthFirst/2-widthLast/2)+widthFirst/2+0.5;
+        let xShift = ((indexes[i]/frames.length)*(98-widthFirst/2-widthLast/2)+widthFirst/2+0.5)/xCoefficient;
         if (!useTrueTime) {
-            xShift = (i/(indexes.length-1))*(98-widthFirst/2-widthLast/2)+widthFirst/2+0.5;
+            xShift = ((i/(indexes.length-1))*(98-widthFirst/2-widthLast/2)+widthFirst/2+0.5)/xCoefficient;
         }
         for (let j = 1; j < numBlurPositions+1; j++) {
             if (indexes[i]-j < 0) {

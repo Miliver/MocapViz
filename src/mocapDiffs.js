@@ -16,35 +16,44 @@ const numKeyframes = 10;
 const circleRadius = 0.1;
 const startDotXPosition = 1;
 
-function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur) {
+function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur, lineCoefficient = 5) {
+    let longerSeq;
+    let shorterSeq;
+    if (sequence1.length > sequence2.length) {
+        longerSeq = sequence1;
+        shorterSeq = sequence2
+    } else {
+        longerSeq = sequence2;
+        shorterSeq = sequence1;
+    }
+
     let div = document.createElement("div");
     let image = document.createElement("img");
     image.className = "drawItemVisualization";
 
     let canvas = document.createElement("canvas");
-    let jointsCount = Core.getSequenceJointsPerFrame(sequence1);
+    let jointsCount = Core.getSequenceJointsPerFrame(longerSeq);
     mainRenderer = initializeMocapRenderer(canvas, visualizationWidth, visualizationHeight, drawStyle, jointsCount);
 
     // draw skeletons
-    let yThird = visualizationHeight / 37.5;
-    let processed1 = Core.processSequence(sequence1, numKeyframes, sceneWidth, visualizationWidth, visualizationHeight  / 3, drawStyle);
-    let positions1 = drawSequenceIntoImage(mainRenderer, processed1, drawStyle, drawStyleBlur, yThird * 2)
+    let yThird = visualizationHeight / (visualizationWidth / visualizationHeight * 6);
+    let processed1 = Core.processSequence(longerSeq, numKeyframes, sceneWidth, visualizationWidth, visualizationHeight  / 3, drawStyle);
+    let positions1 = drawSequenceIntoImage(mainRenderer, processed1, drawStyle, drawStyleBlur, yThird * 2);
 
-    let processed2 = Core.processSequence(sequence2, numKeyframes, sceneWidth, visualizationWidth, visualizationHeight  / 3, drawStyle);
-    let positions2 = drawSequenceIntoImage(mainRenderer, processed2, drawStyle, drawStyleBlur, 0);
+    let processed2 = Core.processSequence(shorterSeq, numKeyframes, sceneWidth, visualizationWidth, visualizationHeight  / 3, drawStyle);
+    let positions2 = drawSequenceIntoImage(mainRenderer, processed2, drawStyle, drawStyleBlur, 0, longerSeq.length / shorterSeq.length);
 
     // count DTW
-    let DTWArr = countDTW(prepareSequence(sequence1), prepareSequence(sequence2));
+    let DTWArr = countDTW(prepareSequence(longerSeq), prepareSequence(shorterSeq));
     console.log(DTWArr[DTWArr.length - 1][DTWArr[0].length - 1]);
     let DTWMapping = countMatrix(DTWArr);
 
     // draw dots
-    console.log(DTWMapping);
     let dotCoords1 = drawDots(mainRenderer, yThird * 2, positions1, processed1.frames);
     let dotCoords2 = drawDots(mainRenderer, yThird, positions2, processed2.frames);
 
     // draw lines
-    drawLines(mainRenderer, dotCoords1, dotCoords2, DTWMapping);
+    drawLines(mainRenderer, dotCoords1, dotCoords2, DTWMapping, DTWArr, lineCoefficient);
 
     div.appendChild(image);
     image.src = mainRenderer.canvas.toDataURL("image/png");
@@ -55,7 +64,7 @@ function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizati
     return div;
 }
 
-function drawSequenceIntoImage(mainRenderer, processed, drawStyle, drawStyleBlur, yShift) {
+function drawSequenceIntoImage(mainRenderer, processed, drawStyle, drawStyleBlur, yShift, xCoefficient = 1) {
     let figureScale = processed.figureScale;
     let frames = processed.frames;
     resizeSkeleton(mainRenderer.skeleton, drawStyle, figureScale);
@@ -65,9 +74,9 @@ function drawSequenceIntoImage(mainRenderer, processed, drawStyle, drawStyleBlur
     let fillStyle = new Core.MocapDrawStyle(drawStyle.skeletonModel,  drawStyle.boneRadius, drawStyle.jointRadius,
         drawStyle.headRadius, drawStyle.boneStyle, drawStyle.leftBoneStyle, drawStyle.rightBoneStyle,
         drawStyle.jointStyle, drawStyle.figureScale, drawStyle.noseStyle, drawStyle.noseRadius, 0.4);
-    drawSequence(mainRenderer, frames, fillKeyframes, 0, fillStyle, drawStyleBlur, figureScale, yShift, false, true);
+    drawSequence(mainRenderer, frames, fillKeyframes, 0, fillStyle, drawStyleBlur, figureScale, yShift, false, true, xCoefficient);
 
-    return drawSequence(mainRenderer, frames, keyframes, 0, drawStyle, drawStyleBlur, figureScale, yShift, false, true);
+    return drawSequence(mainRenderer, frames, keyframes, 0, drawStyle, drawStyleBlur, figureScale, yShift, false, true, xCoefficient);
 }
 
 function drawDots(mainRenderer, dotYShift, positions, frames) {
@@ -204,46 +213,24 @@ function countMatrix(arr) {
     return pathArr[len1 - 1][len2 - 1].path;
 }
 
-function countPath(arr) {
-    let len1 = arr.length;
-    let len2 = arr[0].length;
-    let path = [[len1 - 1,len2 - 1]];
-
-    let i = len1 - 1;
-    let j = len2 - 1;
-    while(i !== 0 || j !== 0) {
-        let nextVal = Math.min(arr[i - 1][j - 1], arr[i][j - 1], arr[i - 1][j]);
-        if (nextVal === arr[i - 1][j - 1]) {
-            i --;
-            j --;
-        } else if (nextVal === arr[i][j - 1]) {
-            j --;
-        } else if (nextVal === arr[i - 1][j]) {
-            i --;
-        }
-        path.unshift([i, j]);
-    }
-
-    return path;
-}
-
 function PathArrEl(value, path) {
     this.value = value;
     this.path = path;
 }
 
-function drawLines(mocapRenderer, dots1, dots2, path) {
-    let colorCoeff = 255 / path.length;
-    for (let i = 1; i < path.length; i += 5) {
-        let colorG = Math.floor(colorCoeff * Math.abs(path[i][0] - path[i][1]));
-        drawLine(mocapRenderer, dots1[path[i][0] - 1], dots2[path[i][1] - 1], colorG);
+function drawLines(mocapRenderer, dots1, dots2, path, dtwArr, lineCoefficient) {
+    const largestDistance = findLargestDistance(path, dtwArr);
+    let colorCoefficient = 255 / largestDistance;
+    for (let i = 1; i < path.length; i += lineCoefficient) {
+        let colorValue = dtwArr[path[i][0]][path[i][1]] - dtwArr[path[i - 1][0]][path[i - 1][1]];
+        let color = Math.floor(colorCoefficient * colorValue);
+        drawLine(mocapRenderer, dots1[path[i][0] - 1], dots2[path[i][1] - 1], color);
     }
 }
 
-function drawLine(mocapRenderer, coord1, coord2, colorG) {
+function drawLine(mocapRenderer, coord1, coord2, color) {
     let scene = new THREE.Scene();
-
-    const material = new THREE.LineBasicMaterial( { color: `rgb(${colorG}, 0, 0)` } );
+    const material = new THREE.LineBasicMaterial( { color: `rgb(${color}, ${255 - color}, 0)` } );
     const points = [];
     points.push( new THREE.Vector3( coord1.x, coord1.y, coord1.z));
     points.push( new THREE.Vector3( coord2.x, coord2.y, coord2.z));
@@ -252,6 +239,15 @@ function drawLine(mocapRenderer, coord1, coord2, colorG) {
     const line = new THREE.Line(geometry, material);
     scene.add(line);
     mocapRenderer.renderer.render(scene, mocapRenderer.camera);
+}
+
+function findLargestDistance(path, dtwArr) {
+    let max = 0;
+    for (let i = 1; i < path.length; i ++) {
+        let newVal = dtwArr[path[i][0]][path[i][1]] - dtwArr[path[i - 1][0]][path[i - 1][1]];
+        max = (newVal > max) ? newVal : max;
+    }
+    return max;
 }
 
 export {createDiffVisualization};
