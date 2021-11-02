@@ -5,18 +5,21 @@ import {
     drawSequence,
     findKeyframes,
     initializeMocapRenderer,
-    resizeSkeleton
+    resizeSkeleton,
+    addMapToVisualization
 } from "./mocap.js";
 
 import * as THREE from "./lib/three.module.js";
 import {Vec3} from "./mocapCore.js";
+import * as Model from "./model.js";
 
 const sceneWidth = 100;
 const numKeyframes = 10;
 const circleRadius = 0.1;
 const startDotXPosition = 1;
+const model = Model.modelVicon;
 
-function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur, lineCoefficient = 5) {
+function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur, mapWidth, mapHeight, lineCoefficient = 5) {
     let longerSeq;
     let shorterSeq;
     if (sequence1.length > sequence2.length) {
@@ -55,13 +58,23 @@ function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizati
     // draw lines
     drawLines(mainRenderer, dotCoords1, dotCoords2, DTWMapping, DTWArr, lineCoefficient);
 
+    // add maps
+    div.appendChild(addMapToSequence(processed1, mapWidth, mapHeight));
     div.appendChild(image);
+    div.appendChild(addMapToSequence(processed2, mapWidth, mapHeight));
     image.src = mainRenderer.canvas.toDataURL("image/png");
     image.height = visualizationHeight;
     image.width = visualizationWidth;
     div.style.position = "relative";
 
     return div;
+}
+
+function addMapToSequence(processed, mapWidth, mapHeight) {
+    let frames = processed.frames;
+    let keyframes = findKeyframes(frames, numKeyframes, Core.KeyframeSelectionAlgorithmEnum.Decimation);
+    let figureScale = processed.figureScale;
+    return addMapToVisualization(frames, keyframes, figureScale, model, mapWidth, mapHeight);
 }
 
 function drawSequenceIntoImage(mainRenderer, processed, drawStyle, drawStyleBlur, yShift, xCoefficient = 1) {
@@ -94,7 +107,7 @@ function drawDots(mainRenderer, dotYShift, positions, frames) {
 function drawDotFrame(mocapRenderer, xPosition, yPosition, circleRadius) {
     let scene = new THREE.Scene();
     const geometry = new THREE.CircleGeometry(circleRadius, 32);
-    const material = new THREE.MeshBasicMaterial( { color: "rgb(255, 0, 0)" } );
+    const material = new THREE.MeshBasicMaterial( { color: "rgb(0, 0, 0)" } );
     const circle = new THREE.Mesh(geometry, material);
     circle.position.set(xPosition, 0.1 + yPosition, 0);
     scene.add(circle);

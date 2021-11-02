@@ -93,13 +93,13 @@ class VisualizationFactory {
         return -1;
     }
 
-    visualizeSequenceDiffs(sequence1, sequence2, visualizationWidth = 1905, visualizationHeight = 200) {
+    visualizeSequenceDiffs(sequence1, sequence2, visualizationWidth = 1905, visualizationHeight = 200, mapWidth = 350, mapHeight = 350) {
         let drawStyle = new Core.MocapDrawStyle(this.model, this.boneRadius, this.jointRadius, this.headRadius, this.boneStyle,
             this.leftBoneStyle, this.rightBoneStyle, this.jointStyle, 1, this.noseStyle, this.noseRadius, this.opacity);
         let drawStyleBlur = new Core.MocapDrawStyle(this.model, this.boneRadius, this.jointRadius, this.headRadius, this.boneStyle,
             this.boneStyle, this.boneStyle, this.jointStyle, 1, this.boneStyle, this.noseRadius, this.blurFrameOpacity);
 
-        return createDiffVisualization(mainRenderer, sequence1, sequence2, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur);
+        return createDiffVisualization(mainRenderer, sequence1, sequence2, visualizationWidth, visualizationHeight, drawStyle, drawStyleBlur, mapWidth, mapHeight, 5);
     }
 
 
@@ -568,7 +568,7 @@ function createAnimationElement(sequence, model, visualizationWidth, visualizati
     return div;
 }
 
-export {VisualizationFactory, visualizeToCanvas, createVisualizationElement, createZoomableVisualizationElement, createAnimationElement, drawSequence, resizeSkeleton, findKeyframes, clearRenderer, initializeMocapRenderer, resizeMocapRenderer};
+export {VisualizationFactory, visualizeToCanvas, createVisualizationElement, createZoomableVisualizationElement, createAnimationElement, drawSequence, resizeSkeleton, findKeyframes, clearRenderer, initializeMocapRenderer, resizeMocapRenderer, addMapToVisualization};
 export {loadDataFromString, loadDataFromFile, getSequenceLength, getSequenceCategory, getSequenceJointsPerFrame, KeyframeSelectionAlgorithmEnum} from './mocapCore.js';
 export {createDiffVisualization} from './mocapDiffs.js';
 export * from './model.js';
