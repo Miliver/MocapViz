@@ -52,11 +52,13 @@ function createDiffVisualization(mainRenderer, sequence1, sequence2, visualizati
     let DTWMapping = countMatrix(DTWArr);
 
     // draw dots
-    let dotCoords1 = drawDots(mainRenderer, yThird * 2, positions1, processed1.frames);
-    let dotCoords2 = drawDots(mainRenderer, yThird, positions2, processed2.frames);
+    const largestDistance = findLargestDistance(DTWMapping, DTWArr);
+    let colorCoefficient = 255 / largestDistance;
+    let dotCoords1 = drawDots(mainRenderer, yThird * 2, positions1, processed1.frames, DTWMapping, DTWArr, colorCoefficient);
+    let dotCoords2 = drawDots(mainRenderer, yThird, positions2, processed2.frames, DTWMapping, DTWArr, colorCoefficient);
 
     // draw lines
-    drawLines(mainRenderer, dotCoords1, dotCoords2, DTWMapping, DTWArr, lineCoefficient);
+    drawLines(mainRenderer, dotCoords1, dotCoords2, DTWMapping, DTWArr, lineCoefficient, colorCoefficient);
 
     // add maps
     div.appendChild(addMapToSequence(processed1, mapWidth, mapHeight));
@@ -92,22 +94,29 @@ function drawSequenceIntoImage(mainRenderer, processed, drawStyle, drawStyleBlur
     return drawSequence(mainRenderer, frames, keyframes, 0, drawStyle, drawStyleBlur, figureScale, yShift, false, true, xCoefficient);
 }
 
-function drawDots(mainRenderer, dotYShift, positions, frames) {
+function drawDots(mainRenderer, dotYShift, positions, frames, path, dtwArr, colorCoefficient) {
     let shift = positions[positions.length - 1]/frames.length;
     let xPosition = startDotXPosition;
     let dots = [];
     for (let i = 0; i < frames.length; i ++) {
-        drawDotFrame(mainRenderer, xPosition, dotYShift, circleRadius);
+        let colorValue;
+        if (i > 0) {
+            colorValue = dtwArr[path[i][0]][path[i][1]] - dtwArr[path[i - 1][0]][path[i - 1][1]];
+        } else {
+            colorValue = dtwArr[path[i][0]][path[i][1]];
+        }
+        let color = Math.floor(colorCoefficient * colorValue);
+        drawDotFrame(mainRenderer, xPosition, dotYShift, circleRadius, color);
         dots.push(new Vec3(xPosition, dotYShift, 0));
         xPosition += shift;
     }
     return dots;
 }
 
-function drawDotFrame(mocapRenderer, xPosition, yPosition, circleRadius) {
+function drawDotFrame(mocapRenderer, xPosition, yPosition, circleRadius, color) {
     let scene = new THREE.Scene();
     const geometry = new THREE.CircleGeometry(circleRadius, 32);
-    const material = new THREE.MeshBasicMaterial( { color: "rgb(0, 0, 0)" } );
+    const material = new THREE.MeshBasicMaterial( { color: `rgb(${color}, ${255 - color}, 0)` } );
     const circle = new THREE.Mesh(geometry, material);
     circle.position.set(xPosition, 0.1 + yPosition, 0);
     scene.add(circle);
@@ -231,13 +240,19 @@ function PathArrEl(value, path) {
     this.path = path;
 }
 
-function drawLines(mocapRenderer, dots1, dots2, path, dtwArr, lineCoefficient) {
-    const largestDistance = findLargestDistance(path, dtwArr);
-    let colorCoefficient = 255 / largestDistance;
-    for (let i = 1; i < path.length; i += lineCoefficient) {
-        let colorValue = dtwArr[path[i][0]][path[i][1]] - dtwArr[path[i - 1][0]][path[i - 1][1]];
+function drawLines(mocapRenderer, dots1, dots2, path, dtwArr, lineCoefficient, colorCoefficient) {
+    for (let i = 0; i < path.length; i += lineCoefficient) {
+        let colorValue;
+        if (i > 0) {
+            colorValue = dtwArr[path[i][0]][path[i][1]] - dtwArr[path[i - 1][0]][path[i - 1][1]];
+        } else {
+            colorValue = dtwArr[path[i][0]][path[i][1]];
+        }
         let color = Math.floor(colorCoefficient * colorValue);
-        drawLine(mocapRenderer, dots1[path[i][0] - 1], dots2[path[i][1] - 1], color);
+        if (path[i][0] >= dots1.length || path[i][1] >= dots2.length){
+            break;
+        }
+        drawLine(mocapRenderer, dots1[path[i][0]], dots2[path[i][1]], color);
     }
 }
 
