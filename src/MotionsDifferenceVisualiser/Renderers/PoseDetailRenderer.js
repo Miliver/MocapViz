@@ -89,9 +89,9 @@ class PoseDetailRenderer {
     }
 
     #renderDetailDots(warpingPathIndex) {
-        let longerSequenceColor = ColorManager.getColorForSequenceIndex(this.#dtw.warpingPath[warpingPathIndex].index1,
+        let longerSequenceColor = ColorManager.getColorValuePerSequenceIndex(this.#dtw.warpingPath[warpingPathIndex].index1,
             this.#dtw, false);
-        let shorterSequenceColor = ColorManager.getColorForSequenceIndex(this.#dtw.warpingPath[warpingPathIndex].index2,
+        let shorterSequenceColor = ColorManager.getColorValuePerSequenceIndex(this.#dtw.warpingPath[warpingPathIndex].index2,
             this.#dtw, true);
 
         let longerSequenceColorPose = new ColoredPose(

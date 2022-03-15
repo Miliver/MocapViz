@@ -1,16 +1,16 @@
 import {SampleManager} from "./SampleManager.js";
 
 class ColorManager {
-    static getColorForSequenceIndex(index, dtw, isShorterSequence) {
+    static getColorValuePerSequenceIndex(index, dtw, isShorterSequence) {
         let poseDistance = ColorManager.#getPoseDistanceAverageForIndex(index, dtw.warpingPath, isShorterSequence);
         return ColorManager.#selectColorByPoseDistance(poseDistance, dtw);
     }
 
-    static getRGBFromColor(color) {
+    static convertColorValueToRgb(color) {
         return `rgb(${color}, ${255 - color}, 0)`;
     }
 
-    static getColorForWarpingPathIndex(index, dtw) {
+    static getColorValuePerWarpingPathIndex(index, dtw) {
         let poseDistance = dtw.warpingPath[index].poseDistance;
         return ColorManager.#selectColorByPoseDistance(poseDistance, dtw);
     }

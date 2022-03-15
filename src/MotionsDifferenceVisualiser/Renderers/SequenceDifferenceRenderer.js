@@ -25,7 +25,7 @@ class SequenceDifferenceRenderer {
         let xPosition = startXDotPosition;
         let dots = [];
         for (let i = 0; i < frames.length; i++) {
-            let color = ColorManager.getColorForSequenceIndex(i, dtw, isShorterSequence);
+            let color = ColorManager.getColorValuePerSequenceIndex(i, dtw, isShorterSequence);
             SequenceDifferenceRenderer.drawDotFrame(renderer, xPosition, dotYShift, circleRadius, color);
             dots.push(new Vec3(xPosition, dotYShift, 0));
             xPosition += shift;
@@ -35,7 +35,7 @@ class SequenceDifferenceRenderer {
 
     static renderLines(renderer, dots1, dots2, lineCoefficient, dtw) {
         for (let i = 0; i < dtw.warpingPath.length; i += lineCoefficient) {
-            let color = ColorManager.getColorForWarpingPathIndex(i, dtw);
+            let color = ColorManager.getColorValuePerWarpingPathIndex(i, dtw);
             SequenceDifferenceRenderer.#drawLine(renderer, dots1[dtw.warpingPath[i].index1], dots2[dtw.warpingPath[i].index2], color);
         }
     }
@@ -48,7 +48,7 @@ class SequenceDifferenceRenderer {
         if (typeof color === "string" || color instanceof String) {
             rgb = color;
         } else {
-            rgb = ColorManager.getRGBFromColor(color);
+            rgb = ColorManager.convertColorValueToRgb(color);
         }
 
         const material = new THREE.MeshBasicMaterial({color: rgb});
@@ -62,7 +62,7 @@ class SequenceDifferenceRenderer {
 
     static #drawLine(renderer, coordination1, coordination2, color) {
         let scene = new THREE.Scene();
-        let rgb = ColorManager.getRGBFromColor(color);
+        let rgb = ColorManager.convertColorValueToRgb(color);
         const material = new THREE.LineBasicMaterial({color: rgb});
 
         const points = [];

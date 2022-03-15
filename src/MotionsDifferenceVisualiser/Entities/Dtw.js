@@ -9,7 +9,7 @@ class Dtw {
 
     // maximal pose distance (ie: maxContextMultiple = 2 => if pose distance is larger than
     // (poseAverage * maxCountMultiple) then color will be the worst possible
-    maxContextMultiple = 2;
+    maxDistanceMultiple = 2;
 
     // value 0-255 which represents context importance during coloring
     contextPart = 150;

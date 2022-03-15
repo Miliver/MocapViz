@@ -13,8 +13,8 @@ class BodyPartsRenderer {
             ctx.fillStyle = "black";
             ctx.fillText(dtwBodyParts[j][1], 0, j * textHeight + textHeight, textSpace);
             for (let i = 0; i < dtwBodyParts[j][0].warpingPath.length; i++) {
-                let color = ColorManager.getColorForWarpingPathIndex(i, dtwBodyParts[j][0]);
-                ctx.fillStyle = ColorManager.getRGBFromColor(color);
+                let color = ColorManager.getColorValuePerWarpingPathIndex(i, dtwBodyParts[j][0]);
+                ctx.fillStyle = ColorManager.convertColorValueToRgb(color);
                 ctx.fillRect(textSpace + i * oneBarPieceWidth, j * textHeight, oneBarPieceWidth, textHeight);
             }
         }
