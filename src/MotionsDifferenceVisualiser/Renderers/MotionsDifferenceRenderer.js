@@ -9,7 +9,7 @@ import {TimeAlignedMappingRenderer} from "./TimeAlignedMappingRenderer.js";
 import {MapRenderer} from "./MapRenderer.js";
 import {BodyPartManager} from "../Managers/BodyPartManager.js";
 import {SequenceManager} from "../Managers/SequenceManager.js";
-import {DTWManager} from "../Managers/DTWManager.js";
+import {DtwManager} from "../Managers/DtwManager.js";
 import {
     detailDescription,
     mapDescription,
@@ -147,7 +147,7 @@ class MotionsDifferenceRenderer {
             this.#timeAlignedSequenceDifferenceRenderer, this.#NUM_KEYFRAMES, this.#SCENE_WIDTH, this.#drawStyle,
             this.#drawStyleBlur, 0, reducedLongerSequence.length / this.#shorterSequenceFiltered.length);
 
-        let reducedDtw = DTWManager.calculateDTW(reducedLongerSequence, this.#shorterSequenceFiltered, -1, this.#dtw.context);
+        let reducedDtw = DtwManager.calculateDTW(reducedLongerSequence, this.#shorterSequenceFiltered, -1, this.#dtw.context);
 
         let longerSequenceDotCoordinates = SequenceDifferenceRenderer.renderDots(this.#timeAlignedSequenceDifferenceRenderer,
             yThird * 2 - 0.35, positions1, reducedLongerSequenceProcessed.frames, reducedDtw,

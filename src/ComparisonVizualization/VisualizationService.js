@@ -49,7 +49,7 @@ class VisualizationService {
         this.#shorterProcessed = this.drawer.processSequenceForDrawing(shorterSeq);
         let shorterPositions = this.drawer.drawSequenceIntoImage(this.#shorterProcessed, 0, longerSeq.length / shorterSeq.length);
 
-        // count DTW
+        // count Dtw
         longerSeq = this.#parseSequence(longerSeq);
         shorterSeq = this.#parseSequence(shorterSeq);
 
@@ -60,9 +60,9 @@ class VisualizationService {
             this.context.addNewSample(VisualizationService.#countDistanceAverage(dtw));
         }
 
-        // draw DTW
+        // draw Dtw
         this.drawer.drawDTWInfoToImage(dtw.Val, category1, category2, dtwA);
-        console.log("DTW result: ");
+        console.log("Dtw result: ");
         console.log(dtw);
 
         let dotCoords1 = this.drawer.drawDots(yThird * 2 - 0.35, longerPositions, this.#longerProcessed.frames, dtw);

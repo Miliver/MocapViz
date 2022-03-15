@@ -1,6 +1,6 @@
 import {WarpingPathEntity} from "./WarpingPathEntity.js";
 
-class DTWMatrixEntity {
+class DtwMatrixEntity {
     warpingPath = [];
 
     constructor(cumulativeDistance, poseDistance, warpingPath = [], index1 = -1, index2 = -1) {
@@ -21,4 +21,4 @@ class DTWMatrixEntity {
     }
 }
 
-export {DTWMatrixEntity};
+export {DtwMatrixEntity};

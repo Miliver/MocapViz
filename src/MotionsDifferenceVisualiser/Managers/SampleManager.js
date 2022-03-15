@@ -1,6 +1,6 @@
 import {saveAs} from "../../lib/FileSaver.js";
 import {SequenceManager} from "./SequenceManager.js";
-import {DTWManager} from "./DTWManager.js";
+import {DtwManager} from "./DtwManager.js";
 import * as Model from "../../model.js";
 import {Context} from "../Entities/Context.js";
 
@@ -94,7 +94,7 @@ class SampleManager {
             let sequence1 = SequenceManager.getPoseCoordinatesPerSequence(samples[i]);
             let sequence2 = SequenceManager.getPoseCoordinatesPerSequence(samples[i + 1]);
 
-            let dtw = DTWManager.calculateDTW(sequence1, sequence2, -1, new Context(false));
+            let dtw = DtwManager.calculateDTW(sequence1, sequence2, -1, new Context(false));
             DTWs.push(dtw.distance);
             poseDistances.push(SampleManager.#countDistanceAverage(dtw));
             bodyParts = this.#addBodyPartsDistanceAverage(sequence1, sequence2, dtw, bodyParts, model);
@@ -119,19 +119,19 @@ class SampleManager {
 
     static #addBodyPartsDistanceAverage(seq1, seq2, dtw, bodyParts, model) {
         let context = new Context(false);
-        const torsoWarpingPath = DTWManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.torso, model, context).warpingPath;
+        const torsoWarpingPath = DtwManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.torso, model, context).warpingPath;
         bodyParts[0].push(SampleManager.#extractPoseAverageFromWarpingPath(torsoWarpingPath));
 
-        const leftHandWarpingPath = DTWManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.leftHand, model, context).warpingPath;
+        const leftHandWarpingPath = DtwManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.leftHand, model, context).warpingPath;
         bodyParts[1].push(SampleManager.#extractPoseAverageFromWarpingPath(leftHandWarpingPath));
 
-        const rightHandWarpingPath = DTWManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.rightHand, model, context).warpingPath;
+        const rightHandWarpingPath = DtwManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.rightHand, model, context).warpingPath;
         bodyParts[2].push(SampleManager.#extractPoseAverageFromWarpingPath(rightHandWarpingPath));
 
-        const leftLegWarpingPath = DTWManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.leftLeg, model, context).warpingPath;
+        const leftLegWarpingPath = DtwManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.leftLeg, model, context).warpingPath;
         bodyParts[3].push(SampleManager.#extractPoseAverageFromWarpingPath(leftLegWarpingPath));
 
-        const rightLegWarpingPath = DTWManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.rightLeg, model, context).warpingPath;
+        const rightLegWarpingPath = DtwManager.calculateDtwPerBodyPart(seq1, seq2, dtw, Model.BoneType.rightLeg, model, context).warpingPath;
         bodyParts[4].push(SampleManager.#extractPoseAverageFromWarpingPath(rightLegWarpingPath));
 
         return bodyParts;

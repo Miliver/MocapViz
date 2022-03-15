@@ -1,4 +1,4 @@
-class DTW {
+class Dtw {
     distance;
     warpingPath;
     context;
@@ -56,4 +56,4 @@ class DTW {
     }
 }
 
-export {DTW};
+export {Dtw};

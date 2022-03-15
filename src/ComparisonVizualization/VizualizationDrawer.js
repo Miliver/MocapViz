@@ -70,7 +70,7 @@ class VisualizationDrawer {
 
     drawDTWInfoToImage(dtwValue, category1, category2, dtwAverageValue = 0) {
         let text = document.createElement("p");
-        text.appendChild(document.createTextNode("DTW value: " + dtwValue));
+        text.appendChild(document.createTextNode("Dtw value: " + dtwValue));
         text.appendChild(document.createElement("br"));
         text.appendChild(document.createTextNode("Category1: " + category1));
         text.appendChild(document.createElement("br"));
@@ -78,7 +78,7 @@ class VisualizationDrawer {
         text.appendChild(document.createElement("br"));
 
         if (dtwAverageValue !== 0) {
-            text.appendChild(document.createTextNode("Average DTW value: " + dtwAverageValue));
+            text.appendChild(document.createTextNode("Average Dtw value: " + dtwAverageValue));
         }
 
         this.div.appendChild(text);

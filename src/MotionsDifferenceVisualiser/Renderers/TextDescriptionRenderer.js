@@ -5,7 +5,7 @@ class TextDescriptionRenderer {
         let category1 = CategoryManager.getSequenceCategory(longerSequence);
         let category2 = CategoryManager.getSequenceCategory(shorterSequence);
 
-        textElement.appendChild(document.createTextNode("DTW value: " + dtwDistance));
+        textElement.appendChild(document.createTextNode("Dtw value: " + dtwDistance));
         textElement.appendChild(document.createElement("br"));
         textElement.appendChild(document.createTextNode("Longer sequence category: " + category1));
         textElement.appendChild(document.createElement("br"));
@@ -13,7 +13,7 @@ class TextDescriptionRenderer {
         textElement.appendChild(document.createElement("br"));
 
         if (dtwDistanceAverage !== 0) {
-            textElement.appendChild(document.createTextNode("Average of DTW distance: " + dtwDistanceAverage));
+            textElement.appendChild(document.createTextNode("Average of Dtw distance: " + dtwDistanceAverage));
         }
     }
 }

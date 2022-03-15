@@ -2,7 +2,7 @@ import * as Core from "../../mocapCore.js";
 import {ContextManager} from "./ContextManager.js";
 import {SequenceManager} from "./SequenceManager.js";
 import * as Model from "../../model.js";
-import {DTWManager} from "./DTWManager.js";
+import {DtwManager} from "./DtwManager.js";
 import {MotionsDifferenceRenderer} from "../Renderers/MotionsDifferenceRenderer.js";
 import {Context} from "../Entities/Context.js"
 
@@ -28,7 +28,7 @@ class VisualizationManager {
         let filteredLongerSequence = SequenceManager.getPoseCoordinatesPerSequence(longerSequence);
         let filteredShorterSequence = SequenceManager.getPoseCoordinatesPerSequence(shorterSequence);
 
-        let dtw = DTWManager.calculateDTW(filteredLongerSequence, filteredShorterSequence, -1, this.context);
+        let dtw = DtwManager.calculateDTW(filteredLongerSequence, filteredShorterSequence, -1, this.context);
 
         let jointsCount = Core.getSequenceJointsPerFrame(longerSequence);
         let drawer = new MotionsDifferenceRenderer(longerSequence, shorterSequence, dtw, visualizationWidth,
