@@ -1,9 +1,13 @@
 import {CategoryManager} from "../Managers/CategoryManager.js";
 
 class TextDescriptionRenderer {
-    static render(textElement, longerSequence, shorterSequence, dtw) {
+    static render(textElement, longerSequence, shorterSequence, dtw, switchedSequences) {
         let category1 = CategoryManager.getSequenceCategory(longerSequence);
         let category2 = CategoryManager.getSequenceCategory(shorterSequence);
+
+        if (switchedSequences) {
+            TextDescriptionRenderer.#addText(textElement, "Sequences were switched");
+        }
 
         TextDescriptionRenderer.#addText(textElement, "DTW distance: " + dtw.distance);
         TextDescriptionRenderer.#addText(textElement, "DTW distance / DTW warping path length: " + dtw.distance / dtw.warpingPath.length);
