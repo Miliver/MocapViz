@@ -50,6 +50,7 @@ class MotionsDifferenceRenderer {
     #visualizationParts = null;
     #dtwBodyParts = null;
     #visualizationId = null;
+    #switchedSequences = null;
 
     #textDescription = document.createElement("p");
     #longerSequenceMapCanvas = document.createElement("canvas");
@@ -66,7 +67,7 @@ class MotionsDifferenceRenderer {
     #timeAlignedSequenceDifferenceRenderer = null;
 
     constructor(longerSequence, shorterSequence, dtw, visualizationWidth, drawStyle, drawStyleBlur, jointsCount, model,
-                visualizationParts) {
+                visualizationParts, switchedSequences) {
         this.#longerSequence = longerSequence;
         this.#shorterSequence = shorterSequence;
         this.#dtw = dtw;
@@ -77,6 +78,7 @@ class MotionsDifferenceRenderer {
         this.#jointsCount = jointsCount;
         this.#model = model;
         this.#visualizationParts = visualizationParts;
+        this.#switchedSequences = switchedSequences;
 
         this.#sequenceDifferenceRenderer = initializeMocapRenderer(this.#sequenceDifferenceCanvas , visualizationWidth, this.#VISUALIZATION_HEIGHT, drawStyle, jointsCount);
         this.#sequenceDetailRenderer = initializeMocapRenderer(this.#detailCanvas, visualizationWidth / 3.2, 200, drawStyle, jointsCount, this.#DETAIL_SCENE_WIDTH);
@@ -94,7 +96,7 @@ class MotionsDifferenceRenderer {
 
     fillTextDescription() {
         TextDescriptionRenderer.render(this.#textDescription, this.#longerSequence, this.#shorterSequence,
-            this.#dtw);
+            this.#dtw, this.#switchedSequences);
     }
 
     fillMapCanvases() {

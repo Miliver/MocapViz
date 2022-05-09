@@ -29,7 +29,7 @@ class VisualizationManager {
 
         let jointsCount = Core.getSequenceJointsPerFrame(longerSequence);
         let drawer = new MotionsDifferenceRenderer(longerSequence, shorterSequence, dtw, visualizationWidth,
-            drawStyle, drawStyleBlur, jointsCount, model, visualizationParts);
+            drawStyle, drawStyleBlur, jointsCount, model, visualizationParts, sequence1 !== longerSequence);
 
         if (visualizationParts.description) drawer.fillTextDescription();
         if (visualizationParts.maps) drawer.fillMapCanvases();
