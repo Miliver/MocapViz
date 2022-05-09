@@ -57,8 +57,7 @@ function load() {
         let vp = new VisualizationParts(true, true, true, true, true, true, true);
 
         let visualizationElement = factory.visualizeSequenceDifferences(sequences[0], sequences[1], 1400, contextOption, jsonContent, vp);
-        document.body.insertAdjacentHTML("afterbegin", visualizationElement);
-
+        visualizations.insertBefore(visualizationElement, visualizationElement.firstChild);
         document.getElementById(loaderId).style.display = "none";
     });
 }
