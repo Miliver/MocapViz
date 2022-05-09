@@ -2,7 +2,6 @@ import * as THREE from './lib/three.module.js';
 import * as Model from './model.js';
 import * as Core from './mocapCore.js';
 import {OrbitControls} from './lib/OrbitControls.js';
-import {ContextOption} from "./ComparisonVizualization/VisualizationService.js";
 import {VisualizationManager} from "./MotionsDifferenceVisualiser/Managers/VisualisationManager.js";
 import {SampleManager} from "./MotionsDifferenceVisualiser/Managers/SampleManager.js";
 import {ContextManager} from "./MotionsDifferenceVisualiser/Managers/ContextManager.js";
