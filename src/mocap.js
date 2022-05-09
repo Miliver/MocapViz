@@ -2,10 +2,10 @@ import * as THREE from './lib/three.module.js';
 import * as Model from './model.js';
 import * as Core from './mocapCore.js';
 import {OrbitControls} from './lib/OrbitControls.js';
-import {VisualizationManager} from "./MotionsDifferenceVisualiser/Managers/VisualisationManager.js";
-import {SampleManager} from "./MotionsDifferenceVisualiser/Managers/SampleManager.js";
-import {ContextManager} from "./MotionsDifferenceVisualiser/Managers/ContextManager.js";
-import {VisualizationParts} from "./MotionsDifferenceVisualiser/Entities/VisualizationParts.js";
+import {VisualizationManager} from "./MoDiffViz/Managers/VisualisationManager.js";
+import {SampleManager} from "./MoDiffViz/Managers/SampleManager.js";
+import {ContextManager} from "./MoDiffViz/Managers/ContextManager.js";
+import {VisualizationParts} from "./MoDiffViz/Entities/VisualizationParts.js";
 import {modelKinect} from "./model.js";
 
 let mainRenderer = null;
