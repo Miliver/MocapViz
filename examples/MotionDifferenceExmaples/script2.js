@@ -25,6 +25,9 @@ clearContextButton.onclick = clearContext;
 
 let jsonContent = "";
 
+let visualizations = document.createElement('div');
+document.body.appendChild(visualizations);
+
 let factory = new Mocap.VisualizationFactory();
 factory.numKeyframes = 8;
 factory.numZoomedKeyframes = 10;
@@ -67,7 +70,7 @@ function load() {
             sequences = split.filter((s) => {return s !== "";}).map((s) => s.split("\n"));
             let sequence2 = sequences[0];
             let visualizationElement = factory.visualizeSequenceDifferences(sequence1, sequence2, 1400, contextOption, jsonContent, vp);
-            document.body.insertAdjacentHTML("afterbegin", visualizationElement);
+            visualizations.insertBefore(visualizationElement, visualizations.firstChild);
             document.getElementById(loaderId).style.display = "none";
         }
     }
