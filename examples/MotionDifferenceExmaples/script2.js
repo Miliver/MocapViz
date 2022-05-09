@@ -10,6 +10,7 @@ const sampleFileInput = document.getElementById('sampleFileInput');
 const sampleDataFileInput = document.getElementById("sampleDataFileInput");
 
 const contextSelect = document.getElementById("context");
+const modelSelect = document.getElementById("model");
 const loadButton = document.getElementById("dataLoadButton");
 const sampleButton = document.getElementById("sampleDataButton");
 const downloadContextButton = document.getElementById("downloadContext");
@@ -18,6 +19,7 @@ const clearContextButton = document.getElementById("clearContext");
 let contextOption = VS.ContextOption.NO_CONTEXT;
 
 contextSelect.onchange = setContext;
+modelSelect.onchange = setModel;
 loadButton.onclick = load;
 sampleButton.onclick = sample;
 downloadContextButton.onclick = downloadContext;
@@ -34,7 +36,6 @@ factory.numZoomedKeyframes = 10;
 factory.keyframeSelectionAlgorithm = Mocap.KeyframeSelectionAlgorithmEnum.Equidistant;
 factory.leftBoneStyle = {r: 0, g: 180, b: 0, a: 1};
 factory.opacity = 0.6;
-factory.blurFrameOpacity = 0.17;
 factory.model = modelVicon;
 
 let loaderId = "loader";
@@ -100,6 +101,14 @@ function clearContext() {
 
 function setContext() {
     contextOption = contextSelect.value;
+}
+
+function setModel() {
+    if (modelSelect.value == 1) {
+        factory.model = modelVicon;
+    } else if (modelSelect.value == 2) {
+        factory.model = modelKinect;
+    }
 }
 
 function handleFileLoad(event) {
