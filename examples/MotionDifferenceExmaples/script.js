@@ -1,8 +1,8 @@
 import * as Mocap from '../../src/mocap.js';
 import {modelVicon} from "../../src/model.js";
-import * as VS from '../../src/ComparisonVizualization/VisualizationService.js';
 import {VisualizationParts} from "../../src/MotionsDifferenceVisualiser/Entities/VisualizationParts.js";
 import {modelKinect} from "../../src/mocap.js";
+import {ContextOption} from "../../src/MotionsDifferenceVisualiser/Entities/ContextOption.js";
 
 const dataFileInput = document.getElementById("dataFileInput");
 const sampleFileInput = document.getElementById('sampleFileInput');
@@ -10,15 +10,17 @@ const sampleDataFileInput = document.getElementById("sampleDataFileInput");
 
 const contextSelect = document.getElementById("context");
 const modelSelect = document.getElementById("model");
+const sampleModelSelect = document.getElementById("model-for-sampling");
 const loadButton = document.getElementById("dataLoadButton");
 const sampleButton = document.getElementById("sampleDataButton");
 const downloadContextButton = document.getElementById("downloadContext");
 const clearContextButton = document.getElementById("clearContext");
 
-let contextOption = VS.ContextOption.NO_CONTEXT;
+let contextOption = ContextOption.NO_CONTEXT;
 
 contextSelect.onchange = setContext;
 modelSelect.onchange = setModel;
+sampleModelSelect.onchange = setModel;
 loadButton.onclick = load;
 sampleButton.onclick = sample;
 downloadContextButton.onclick = downloadContext;
