@@ -1,6 +1,6 @@
 import {motionCategories} from "../../model.js";
 
-class CategoryManager {
+class SequenceDescriptionManager {
     static getSequenceCategory(sequence) {
         let sequenceInfo = sequence[0];
         let splitSequenceInfo = sequenceInfo.split(' ');
@@ -8,6 +8,12 @@ class CategoryManager {
         let categoryNumber = splitNumInfo[1];
         return motionCategories[categoryNumber];
     }
+
+    static getSequenceId(sequence) {
+        let sequenceInfo = sequence[0];
+        let splitSequenceInfo = sequenceInfo.split(' ');
+        return splitSequenceInfo[splitSequenceInfo.length - 1];
+    }
 }
 
-export {CategoryManager};
+export {SequenceDescriptionManager};
