@@ -61,6 +61,7 @@ function load() {
 
         let visualizationElement = factory.visualizeSequenceDifferences(sequences[0], sequences[1], 1400, contextOption, jsonContent, vp);
         visualizations.insertBefore(visualizationElement, visualizations.firstChild);
+        visualizations.insertBefore(document.createElement('hr'), visualizations.firstChild);
         document.getElementById(loaderId).style.display = "none";
     });
 }

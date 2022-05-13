@@ -74,6 +74,7 @@ function load() {
             let sequence2 = sequences[0];
             let visualizationElement = factory.visualizeSequenceDifferences(sequence1, sequence2, 1400, contextOption, jsonContent, vp);
             visualizations.insertBefore(visualizationElement, visualizations.firstChild);
+            visualizations.insertBefore(document.createElement('hr'), visualizations.firstChild);
             document.getElementById(loaderId).style.display = "none";
         }
     }
